@@ -33,7 +33,7 @@ import com.google.common.collect.Lists;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Client;
 import com.twitter.hbc.core.Constants;
-import com.twitter.hbc.core.endpoint.StatusesFilterEndpoint;
+import com.twitter.hbc.core.endpoint.StatusesSampleEndpoint;
 import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
@@ -79,14 +79,9 @@ public class TwitterProducer {
 			 * Declare the host you want to connect to, the endpoint, and
 			 * authentication (basic auth or oauth)
 			 */
-			StatusesFilterEndpoint endpoint = new StatusesFilterEndpoint();
+			StatusesSampleEndpoint endpoint = new StatusesSampleEndpoint();
 			
-			// Track  anything that is geo-tagged
-			endpoint.addQueryParameter("locations", "-180,-90,180,90");
 			
-			// add some additional keywords
-			List<String> terms = Lists.newArrayList("twitter", "api");
-			endpoint.trackTerms(terms);
 
 			// These secrets should be read from a config file
 			Authentication hosebirdAuth = new OAuth1(consumerKey,
