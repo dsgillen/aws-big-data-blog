@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package com.amazonaws.kinesis.dataviz.producer;
+package gov.pnnl.cloud.producer;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.BlockingQueue;

@@ -13,7 +13,10 @@
  * permissions and limitations under the License.
  */
 
-package com.amazonaws.kinesis.dataviz.twitter;
+package gov.pnnl.cloud.producer.twitter;
+
+import gov.pnnl.cloud.producer.ProducerBuilder;
+import gov.pnnl.cloud.producer.ProducerClient;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,8 +30,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.amazonaws.kinesis.dataviz.producer.ProducerBuilder;
-import com.amazonaws.kinesis.dataviz.producer.ProducerClient;
 import com.google.common.collect.Lists;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Client;
