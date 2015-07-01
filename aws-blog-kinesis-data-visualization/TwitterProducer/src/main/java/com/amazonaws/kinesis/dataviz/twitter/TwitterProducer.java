@@ -19,7 +19,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
@@ -30,13 +29,10 @@ import org.apache.commons.logging.LogFactory;
 
 import com.amazonaws.kinesis.dataviz.producer.ProducerBuilder;
 import com.amazonaws.kinesis.dataviz.producer.ProducerClient;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
+import com.google.common.collect.Lists;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Client;
 import com.twitter.hbc.core.Constants;
-import com.twitter.hbc.core.endpoint.Location;
-import com.twitter.hbc.core.endpoint.Location.Coordinate;
 import com.twitter.hbc.core.endpoint.StatusesFilterEndpoint;
 import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
@@ -87,6 +83,10 @@ public class TwitterProducer {
 			
 			// Track  anything that is geo-tagged
 			endpoint.addQueryParameter("locations", "-180,-90,180,90");
+			
+			// add some additional keywords
+			List<String> terms = Lists.newArrayList("twitter", "api");
+			endpoint.trackTerms(terms);
 
 			// These secrets should be read from a config file
 			Authentication hosebirdAuth = new OAuth1(consumerKey,
