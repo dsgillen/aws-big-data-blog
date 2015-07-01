@@ -15,6 +15,8 @@
 
 package gov.pnnl.cloud.producer;
 
+import gov.pnnl.cloud.producer.StatisticsCollection.Key;
+
 import java.util.concurrent.BlockingQueue;
 
 import org.slf4j.Logger;
@@ -47,6 +49,9 @@ public class ProducerBase implements Runnable {
 	 * The stream name that we are sending to
 	 */
 	private final String streamName;
+
+
+	private StatisticsCollection stats;
 	
 	private final static Logger logger = LoggerFactory
 			.getLogger(ProducerBase.class);
@@ -58,10 +63,11 @@ public class ProducerBase implements Runnable {
 	 * @param streamName The stream name to send items to
 	 */
 	public ProducerBase(BlockingQueue<Event> eventsQueue,
-			AmazonKinesis kinesisClient, String streamName) {
+			AmazonKinesis kinesisClient, String streamName, StatisticsCollection stats) {
 		this.eventsQueue = eventsQueue;
 		this.kinesisClient = kinesisClient;
 		this.streamName = streamName;
+		this.stats = stats;
 
 	}
 
@@ -82,11 +88,15 @@ public class ProducerBase implements Runnable {
 				put.setPartitionKey(event.getPartitionKey());
 
 				PutRecordResult result = kinesisClient.putRecord(put);
-				logger.info(result.getSequenceNumber() + ": {}", this);	
+				//logger.info(result.getSequenceNumber() + ": {}", this);	
+				
+				stats.increment(Key.KINESIS_MESSAGE_WRITTEN);
 
 			} catch (Exception e) {
 				// didn't get record - move on to next\
-				e.printStackTrace();		
+				e.printStackTrace();	
+				
+				stats.increment(Key.KINESIS_WRITE_ERROR);
 			}
 		}
 

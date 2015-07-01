@@ -27,6 +27,7 @@ public class ProducerBuilder {
 	private String name;
 	private Region region;
 	private int threads = 1;
+	private StatisticsCollection stats;
 
 	public ProducerBuilder() {
 		name = "producer-client" + clientNum.getAndIncrement();
@@ -39,6 +40,11 @@ public class ProducerBuilder {
 	 */
 	public ProducerBuilder withName(String name) {
 		this.name = name;
+		return this;
+	}
+	
+	public ProducerBuilder withStats(StatisticsCollection stats) {
+		this.stats = stats;
 		return this;
 	}
 
@@ -70,6 +76,6 @@ public class ProducerBuilder {
 	 */
 	public ProducerClient build() {
 
-		return new ProducerClient(name, streamName, threads, region);
+		return new ProducerClient(name, streamName, threads, region, stats);
 	}
 }

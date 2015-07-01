@@ -47,6 +47,10 @@ public class ProducerClient implements Producer {
 	
 	private final BlockingQueue<Event> eventsQueue;
 
+	private StatisticsCollection stats;
+	
+	
+
 	private final static Logger logger = LoggerFactory
 			.getLogger(ProducerClient.class);
 
@@ -57,7 +61,7 @@ public class ProducerClient implements Producer {
 	 * @param region The region that the kinesis stream is in
 	 */
 	public ProducerClient(String name, String streamName,
-			int threads, Region region) {
+			int threads, Region region, StatisticsCollection stats) {
 		
 		kinesisClient = new AmazonKinesisClient();
 		kinesisClient.setRegion(region);
@@ -68,6 +72,7 @@ public class ProducerClient implements Producer {
 		this.canRun = new AtomicBoolean(true);
 		this.threads = threads;
 		this.streamName = streamName;
+		this.stats = stats;
 
 	}
 
@@ -84,7 +89,7 @@ public class ProducerClient implements Producer {
 		executorService = Executors.newFixedThreadPool(threads, threadFactory);
 		
 		for(int i = 0; i < this.threads; i++){
-			ProducerBase p = new ProducerBase(this.eventsQueue, this.kinesisClient, this.streamName);
+			ProducerBase p = new ProducerBase(this.eventsQueue, this.kinesisClient, this.streamName, this.stats);
 			executorService.execute(p);
 			logger.info(name + ": New thread started : {}", p);	
 		}
