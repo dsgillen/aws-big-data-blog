@@ -173,10 +173,11 @@ public final class KinesisApplication {
        }
        LOG.info("Using initial position " + initialPositionInStream.toString() + " (if a checkpoint is not found).");
        
-       String kafkaBrokerList = properties.getProperty(ConfigKeys.KAFKA_BROKER_LIST);
-       if (kafkaBrokerList == null) {
+       String kafkaBrokerListProperty = properties.getProperty(ConfigKeys.KAFKA_BROKER_LIST);
+       if (kafkaBrokerListProperty == null) {
            throw new IOException("kafkaBrokerList cannot be null");
        }
+       kafkaBrokerList = kafkaBrokerListProperty;
        LOG.info("Using Kafka broker list " + kafkaBrokerList);
        
         

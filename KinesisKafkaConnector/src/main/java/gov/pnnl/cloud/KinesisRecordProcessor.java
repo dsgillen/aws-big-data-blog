@@ -87,10 +87,11 @@ public class KinesisRecordProcessor implements IRecordProcessor {
        
        mapper = new ObjectMapper();
        
-       LOG.info("Connecting to Redis");
+       LOG.info("Connecting to Kafka");
 
 		Properties properties = new Properties();
 		properties.put("metadata.broker.list", brokerList);
+		properties.put("broker.list", brokerList);
 		properties.put("serializer.class", "kafka.serializer.StringEncoder");
 		ProducerConfig producerConfig = new ProducerConfig(properties);
 		producer = new kafka.javaapi.producer.Producer<String, String>(
@@ -121,7 +122,7 @@ public class KinesisRecordProcessor implements IRecordProcessor {
            boolean processedSuccessfully = false;
            String data = null;
            for (int i = 0; i < NUM_RETRIES; i++) {
-    		   String recordText = record.getData().toString();
+    		   byte[] recordBytes =record.getData().array();
 
                try {
             	   
@@ -129,10 +130,9 @@ public class KinesisRecordProcessor implements IRecordProcessor {
             	   
             	   try {
             		   // For this app, we interpret the payload as UTF-8 chars.
-            		   data = recordText;
 
             		   // use the ObjectMapper to read the json string and create a tree
-            		   JsonNode node = mapper.readTree(data);
+            		   JsonNode node = mapper.readTree(recordBytes);
 
             		   JsonNode geo = node.findValue("geo");
             		   JsonNode coords = geo.findValue("coordinates");
@@ -153,7 +153,7 @@ public class KinesisRecordProcessor implements IRecordProcessor {
             		   topic = "coords";
             	   }
             	   KeyedMessage<String, String> message = null;
-            	   message = new KeyedMessage<String, String>(topic, recordText);
+            	   message = new KeyedMessage<String, String>(topic, new String(recordBytes));
             	   producer.send(message);
 
             	   processedSuccessfully = true;
