@@ -109,7 +109,7 @@ public class TwitterProducer {
 					.withName("Twitter")
 					.withStreamName(streamName)
 					.withRegion(regionName)
-					.withThreads(10)
+					.withThreads(20)
 					.withStats(stats)
 					.build();
 			
