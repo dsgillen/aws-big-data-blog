@@ -87,7 +87,7 @@ public class ProducerBase implements Runnable {
 				List<PutRecordsRequestEntry> puts = new ArrayList<PutRecordsRequestEntry>();
 
 				// bump up the volume!
-				for (int i=0; i<100; i++) {
+				for (int i=0; i<150; i++) {
 
 					PutRecordsRequestEntry put = new PutRecordsRequestEntry();
 
