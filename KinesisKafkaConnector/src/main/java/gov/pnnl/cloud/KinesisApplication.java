@@ -15,6 +15,8 @@
 
 package gov.pnnl.cloud;
 
+import gov.pnnl.cloud.StatisticsCollection.Key;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -41,7 +43,7 @@ public final class KinesisApplication {
 
 
 
-   private static final String DEFAULT_APP_NAME = "SampleKinesisApplication";
+   private static final String DEFAULT_APP_NAME = "SampleKinesisApplication2";
 
    private static final String DEFAULT_KINESIS_ENDPOINT = "eu-west-1";
 
@@ -86,8 +88,12 @@ public final class KinesisApplication {
        System.out.println("Starting " + applicationName);
        LOG.info("Running " + applicationName + " to process stream " + streamName);
 
+		StatisticsCollection stats = new StatisticsCollection();
+		StatisticsCollectionOutput statsOut = new StatisticsCollectionOutput(30000, stats);
+		stats.setStatValue(Key.APPLICATION_START, System.currentTimeMillis());
+		statsOut.start();
 
-       IRecordProcessorFactory recordProcessorFactory = new KinesisRecordProcessorFactory(kafkaBrokerList);
+       IRecordProcessorFactory recordProcessorFactory = new KinesisRecordProcessorFactory(kafkaBrokerList, stats);
        Worker worker = new Worker(recordProcessorFactory, kinesisClientLibConfiguration);
        
 

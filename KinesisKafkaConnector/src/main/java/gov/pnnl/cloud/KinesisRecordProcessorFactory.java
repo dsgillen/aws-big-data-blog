@@ -24,21 +24,23 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorF
 public class KinesisRecordProcessorFactory implements IRecordProcessorFactory {
    
 	private String kafkaBrokerList;
+	private StatisticsCollection stats;
 	
    /**
     * Constructor.
     */
-   public KinesisRecordProcessorFactory(String kafkaBrokerList) {
+   public KinesisRecordProcessorFactory(String kafkaBrokerList, StatisticsCollection stats) {
        super();
        
        this.kafkaBrokerList = kafkaBrokerList;
+       this.stats = stats;
    }
 
    /**
     * {@inheritDoc}
     */
    public IRecordProcessor createProcessor() {
-       return new KinesisRecordProcessor(kafkaBrokerList);
+       return new KinesisRecordProcessor(kafkaBrokerList, stats);
    }
 
 }

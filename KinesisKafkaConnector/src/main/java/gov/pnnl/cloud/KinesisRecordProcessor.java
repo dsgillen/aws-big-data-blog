@@ -15,6 +15,8 @@
 
 package gov.pnnl.cloud;
 
+import gov.pnnl.cloud.StatisticsCollection.Key;
+
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.Iterator;
@@ -66,14 +68,17 @@ public class KinesisRecordProcessor implements IRecordProcessor {
    private Random random;
    
    private final CharsetDecoder decoder = Charset.forName("UTF-8").newDecoder();
+   private StatisticsCollection stats;
    
-   /**
+  
+/**
     * Constructor.
     */
-   public KinesisRecordProcessor(String brokerList) {
+   public KinesisRecordProcessor(String brokerList, StatisticsCollection stats) {
        super();
        
        this.brokerList = brokerList;
+       this.stats = stats;
 		
        random = new Random(System.currentTimeMillis());
    }
@@ -120,6 +125,7 @@ public class KinesisRecordProcessor implements IRecordProcessor {
    private void processRecordsWithRetries(List<Record> records) {
        for (Record record : records) {
            boolean processedSuccessfully = false;
+           stats.increment(Key.KINESIS_MESSAGE_READ);
            String data = null;
            for (int i = 0; i < NUM_RETRIES; i++) {
     		   byte[] recordBytes =record.getData().array();
@@ -155,11 +161,14 @@ public class KinesisRecordProcessor implements IRecordProcessor {
             	   KeyedMessage<String, String> message = null;
             	   message = new KeyedMessage<String, String>(topic, new String(recordBytes));
             	   producer.send(message);
+                   stats.increment(Key.KAFKA_MESSAGE_PUT);
+
 
             	   processedSuccessfully = true;
             	   break;
                } catch (Throwable t) {
             	   LOG.warn("Caught throwable while processing record " + record, t);
+            	   stats.increment(Key.KAFKA_WRITE_ERROR);
                }
 
                // backoff if we encounter an exception.
