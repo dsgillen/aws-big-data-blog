@@ -13,27 +13,29 @@
  * permissions and limitations under the License.
  */
 
-package com.amazonaws.kinesis.dataviz.twitter;
+package gov.pnnl.cloud.producer.twitter;
+
+import gov.pnnl.cloud.producer.ProducerBuilder;
+import gov.pnnl.cloud.producer.ProducerClient;
+import gov.pnnl.cloud.producer.StatisticsCollection;
+import gov.pnnl.cloud.producer.StatisticsCollection.Key;
+import gov.pnnl.cloud.producer.StatisticsCollectionOutput;
+import gov.pnnl.cloud.producer.StatsAwareLinkedBlockingQueue;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.amazonaws.kinesis.dataviz.producer.ProducerBuilder;
-import com.amazonaws.kinesis.dataviz.producer.ProducerClient;
-import com.google.common.collect.Lists;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Client;
 import com.twitter.hbc.core.Constants;
-import com.twitter.hbc.core.endpoint.StatusesFilterEndpoint;
+import com.twitter.hbc.core.endpoint.StatusesSampleEndpoint;
 import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
@@ -67,26 +69,26 @@ public class TwitterProducer {
 		String streamName = System.getProperty(STREAM_NAME);
 		String regionName = System.getProperty(REGION_NAME);
 		
+		StatisticsCollection stats = new StatisticsCollection();
+		StatisticsCollectionOutput statsOut = new StatisticsCollectionOutput(30000, stats);
+		statsOut.start();
+		
+		stats.setStatValue(Key.APPLICATION_START, System.currentTimeMillis());
+		
 		while (true) {
 			/**
 			 * Set up your blocking queues: Be sure to size these properly based
 			 * on expected TPS of your stream
 			 */
-			BlockingQueue<String> msgQueue = new LinkedBlockingQueue<String>(
-					10000);
+			BlockingQueue<String> msgQueue = new StatsAwareLinkedBlockingQueue(10000, stats);
 
 			/**
 			 * Declare the host you want to connect to, the endpoint, and
 			 * authentication (basic auth or oauth)
 			 */
-			StatusesFilterEndpoint endpoint = new StatusesFilterEndpoint();
+			StatusesSampleEndpoint endpoint = new StatusesSampleEndpoint();
 			
-			// Track  anything that is geo-tagged
-			endpoint.addQueryParameter("locations", "-180,-90,180,90");
 			
-			// add some additional keywords
-			List<String> terms = Lists.newArrayList("twitter", "api");
-			endpoint.trackTerms(terms);
 
 			// These secrets should be read from a config file
 			Authentication hosebirdAuth = new OAuth1(consumerKey,
@@ -107,7 +109,8 @@ public class TwitterProducer {
 					.withName("Twitter")
 					.withStreamName(streamName)
 					.withRegion(regionName)
-					.withThreads(10)
+					.withThreads(20)
+					.withStats(stats)
 					.build();
 			
 			producer.connect();
@@ -115,7 +118,7 @@ public class TwitterProducer {
 			LOG.info("Got connection to Kinesis");
 
 			try {
-				if (process(msgQueue, producer)) {
+				if (process(msgQueue, producer, stats)) {
 					break;
 				}
 
@@ -129,7 +132,7 @@ public class TwitterProducer {
 		}
 	}
 
-	private boolean process(BlockingQueue<String> msgQueue, ProducerClient producer) {
+	private boolean process(BlockingQueue<String> msgQueue, ProducerClient producer, StatisticsCollection stats) {
 
 		int exceptionCount = 0;
 		
@@ -144,9 +147,11 @@ public class TwitterProducer {
 				// send to Kinesis
 				producer.post(key, msg);
 				
+				
 			} catch (Exception e) {
 				// didn't get record - move on to next\
 				e.printStackTrace();
+				
 				
 				if(++exceptionCount > 5) {
 					// too many exceptions - lets reconnect and try again
