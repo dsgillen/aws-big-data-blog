@@ -13,9 +13,10 @@
  * permissions and limitations under the License.
  */
 
-package gov.pnnl.cloud.producer;
+package gov.pnnl.cloud.producer.kinesis;
 
-import gov.pnnl.cloud.producer.StatisticsCollection.Key;
+import gov.pnnl.cloud.producer.util.StatisticsCollection;
+import gov.pnnl.cloud.producer.util.StatisticsCollection.Key;
 
 import java.util.ArrayList;
 import java.util.List;
