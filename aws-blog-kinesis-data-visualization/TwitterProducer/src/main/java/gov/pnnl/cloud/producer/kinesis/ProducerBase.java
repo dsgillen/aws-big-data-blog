@@ -103,19 +103,17 @@ public class ProducerBase implements Runnable {
 				}
 
 
-				synchronized(stats) {
-					PutRecordsRequest put = new PutRecordsRequest();
-					put.setRecords(puts);
-					put.setStreamName(this.streamName);
+				PutRecordsRequest put = new PutRecordsRequest();
+				put.setRecords(puts);
+				put.setStreamName(this.streamName);
 
-					PutRecordsResult result = kinesisClient.putRecords(put);
-					//logger.info(result.getSequenceNumber() + ": {}", this);	
-					stats.increment(Key.KINESIS_MESSAGE_WRITTEN);
+				PutRecordsResult result = kinesisClient.putRecords(put);
+				//logger.info(result.getSequenceNumber() + ": {}", this);	
+				stats.increment(Key.KINESIS_MESSAGE_WRITTEN);
 
-					if (stats.getStatValue(Key.KINESIS_MESSAGE_WRITTEN) > 10000) {
-						stats.outStats();
-						System.exit(0);
-					}
+				if (stats.getStatValue(Key.KINESIS_MESSAGE_WRITTEN) > 10000) {
+					stats.outStats();
+					System.exit(0);
 				}
 
 
