@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class StatisticsCollection {
 
-	public enum Key { KINESIS_MESSAGE_READ, KAFKA_MESSAGE_PUT, APPLICATION_START, APPLICATION_END, KAFKA_WRITE_ERROR};
+	public enum Key { KINESIS_MESSAGE_READ, JSON_PARSE_ERROR, KAFKA_MESSAGE_PUT, APPLICATION_START, APPLICATION_END, KAFKA_WRITE_ERROR};
 	
 	private Map<Key, AtomicLong> stats;
 	
