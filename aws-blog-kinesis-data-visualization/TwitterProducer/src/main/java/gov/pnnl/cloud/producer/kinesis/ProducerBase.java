@@ -55,7 +55,6 @@ public class ProducerBase implements Runnable {
 	 */
 	private final String streamName;
 	
-	private AtomicBoolean running = new AtomicBoolean(true);
 
 
 	private StatisticsCollection stats;
@@ -104,20 +103,17 @@ public class ProducerBase implements Runnable {
 				}
 
 				synchronized(stats) {
-					if (running.get()) {
-						PutRecordsRequest put = new PutRecordsRequest();
-						put.setRecords(puts);
-						put.setStreamName(this.streamName);
+					PutRecordsRequest put = new PutRecordsRequest();
+					put.setRecords(puts);
+					put.setStreamName(this.streamName);
 
-						PutRecordsResult result = kinesisClient.putRecords(put);
-						//logger.info(result.getSequenceNumber() + ": {}", this);	
-						stats.increment(Key.KINESIS_MESSAGE_WRITTEN);
+					PutRecordsResult result = kinesisClient.putRecords(put);
+					//logger.info(result.getSequenceNumber() + ": {}", this);	
+					stats.increment(Key.KINESIS_MESSAGE_WRITTEN);
 
-						if (stats.getStatValue(Key.KINESIS_MESSAGE_GENERATED) > 100000L) {
-							stats.outStats();
-							running.set(false);
-							System.exit(0);
-						}
+					if (stats.getStatValue(Key.KINESIS_MESSAGE_GENERATED) > 500000L) {
+						stats.outStats();
+						System.exit(0);
 					}
 				}
 
