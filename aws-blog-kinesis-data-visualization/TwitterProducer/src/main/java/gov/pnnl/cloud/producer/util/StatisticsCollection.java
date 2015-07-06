@@ -1,4 +1,4 @@
-package gov.pnnl.cloud.producer;
+package gov.pnnl.cloud.producer.util;
 
 import java.util.Date;
 import java.util.HashMap;

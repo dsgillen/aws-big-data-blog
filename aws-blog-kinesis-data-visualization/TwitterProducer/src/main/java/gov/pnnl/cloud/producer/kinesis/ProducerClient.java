@@ -13,7 +13,9 @@
  * permissions and limitations under the License.
  */
 
-package gov.pnnl.cloud.producer;
+package gov.pnnl.cloud.producer.kinesis;
+
+import gov.pnnl.cloud.producer.util.StatisticsCollection;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.BlockingQueue;

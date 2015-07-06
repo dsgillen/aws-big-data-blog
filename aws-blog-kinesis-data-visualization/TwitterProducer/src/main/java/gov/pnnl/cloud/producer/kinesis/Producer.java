@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package gov.pnnl.cloud.producer;
+package gov.pnnl.cloud.producer.kinesis;
 
 import java.nio.ByteBuffer;
 

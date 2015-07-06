@@ -13,13 +13,15 @@
  * permissions and limitations under the License.
  */
 
-package gov.pnnl.cloud.producer;
+package gov.pnnl.cloud.producer.kinesis;
 
-import gov.pnnl.cloud.producer.StatisticsCollection.Key;
+import gov.pnnl.cloud.producer.util.StatisticsCollection;
+import gov.pnnl.cloud.producer.util.StatisticsCollection.Key;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +54,7 @@ public class ProducerBase implements Runnable {
 	 * The stream name that we are sending to
 	 */
 	private final String streamName;
+	
 
 
 	private StatisticsCollection stats;
@@ -99,14 +102,20 @@ public class ProducerBase implements Runnable {
 
 				}
 
+
 				PutRecordsRequest put = new PutRecordsRequest();
 				put.setRecords(puts);
 				put.setStreamName(this.streamName);
 
 				PutRecordsResult result = kinesisClient.putRecords(put);
 				//logger.info(result.getSequenceNumber() + ": {}", this);	
-
 				stats.increment(Key.KINESIS_MESSAGE_WRITTEN);
+
+				if (stats.getStatValue(Key.KINESIS_MESSAGE_WRITTEN) > 10000) {
+					stats.outStats();
+					System.exit(0);
+				}
+
 
 			} catch (Exception e) {
 				// didn't get record - move on to next\

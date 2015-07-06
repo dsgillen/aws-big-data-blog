@@ -15,12 +15,12 @@
 
 package gov.pnnl.cloud.producer.twitter;
 
-import gov.pnnl.cloud.producer.ProducerBuilder;
-import gov.pnnl.cloud.producer.ProducerClient;
-import gov.pnnl.cloud.producer.StatisticsCollection;
-import gov.pnnl.cloud.producer.StatisticsCollection.Key;
-import gov.pnnl.cloud.producer.StatisticsCollectionOutput;
-import gov.pnnl.cloud.producer.StatsAwareLinkedBlockingQueue;
+import gov.pnnl.cloud.producer.kinesis.ProducerBuilder;
+import gov.pnnl.cloud.producer.kinesis.ProducerClient;
+import gov.pnnl.cloud.producer.util.StatisticsCollection;
+import gov.pnnl.cloud.producer.util.StatisticsCollectionOutput;
+import gov.pnnl.cloud.producer.util.StatsAwareLinkedBlockingQueue;
+import gov.pnnl.cloud.producer.util.StatisticsCollection.Key;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -40,7 +40,7 @@ import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
 
-public class TwitterProducer {
+public class TwitterProducerKinesis {
 	
 	private static final String TWIT_SECRET = "twitter.secret";
 	private static final String TWIT_TOKEN = "twitter.token";
@@ -51,10 +51,10 @@ public class TwitterProducer {
 	private static final String DEFAULT_PROP_FILE_NAME = "AwsUserData";
 	private static final String REGION_NAME = "aws.regionName";
 
-	private static final Log LOG = LogFactory.getLog(TwitterProducer.class);
+	private static final Log LOG = LogFactory.getLog(TwitterProducerKinesis.class);
 
 	public static void main(String[] args) {
-		TwitterProducer client = new TwitterProducer();
+		TwitterProducerKinesis client = new TwitterProducerKinesis();
 		String arg = args.length == 1 ? args[0] : null;
 		client.run(arg);
 	}
