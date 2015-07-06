@@ -111,11 +111,11 @@ public class ProducerBase implements Runnable {
 					//logger.info(result.getSequenceNumber() + ": {}", this);	
 					stats.increment(Key.KINESIS_MESSAGE_WRITTEN);
 
-					if (stats.getStatValue(Key.KINESIS_MESSAGE_GENERATED) > 500000L) {
+					if (stats.getStatValue(Key.KINESIS_MESSAGE_WRITTEN) > 10000) {
 						stats.outStats();
 						System.exit(0);
 					} else {
-						System.out.println(stats.getStatValue(Key.KINESIS_MESSAGE_GENERATED));
+						System.out.println(stats.getStatValue(Key.KINESIS_MESSAGE_WRITTEN));
 					}
 				}
 
