@@ -102,6 +102,8 @@ public class ProducerBase implements Runnable {
 
 				}
 
+				System.out.println(stats.getStatValue(Key.KINESIS_MESSAGE_WRITTEN));
+
 				synchronized(stats) {
 					PutRecordsRequest put = new PutRecordsRequest();
 					put.setRecords(puts);
