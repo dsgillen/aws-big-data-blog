@@ -21,6 +21,7 @@ import gov.pnnl.cloud.producer.util.StatisticsCollection.Key;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,8 @@ public class ProducerBase implements Runnable {
 	 * The stream name that we are sending to
 	 */
 	private final String streamName;
+	
+	private AtomicBoolean running = new AtomicBoolean(true);
 
 
 	private StatisticsCollection stats;
@@ -100,14 +103,24 @@ public class ProducerBase implements Runnable {
 
 				}
 
-				PutRecordsRequest put = new PutRecordsRequest();
-				put.setRecords(puts);
-				put.setStreamName(this.streamName);
+				synchronized(stats) {
+					if (running.get()) {
+						PutRecordsRequest put = new PutRecordsRequest();
+						put.setRecords(puts);
+						put.setStreamName(this.streamName);
 
-				PutRecordsResult result = kinesisClient.putRecords(put);
-				//logger.info(result.getSequenceNumber() + ": {}", this);	
+						PutRecordsResult result = kinesisClient.putRecords(put);
+						//logger.info(result.getSequenceNumber() + ": {}", this);	
+						stats.increment(Key.KINESIS_MESSAGE_WRITTEN);
 
-				stats.increment(Key.KINESIS_MESSAGE_WRITTEN);
+						if (stats.getStatValue(Key.KINESIS_MESSAGE_WRITTEN) > 100000) {
+							stats.outStats();
+							running.set(false);
+							System.exit(0);
+						}
+					}
+				}
+
 
 			} catch (Exception e) {
 				// didn't get record - move on to next\
