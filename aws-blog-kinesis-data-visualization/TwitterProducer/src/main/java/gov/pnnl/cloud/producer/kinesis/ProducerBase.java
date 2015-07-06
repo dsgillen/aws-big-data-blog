@@ -114,6 +114,8 @@ public class ProducerBase implements Runnable {
 					if (stats.getStatValue(Key.KINESIS_MESSAGE_GENERATED) > 500000L) {
 						stats.outStats();
 						System.exit(0);
+					} else {
+						System.out.println(stats.getStatValue(Key.KINESIS_MESSAGE_GENERATED));
 					}
 				}
 
