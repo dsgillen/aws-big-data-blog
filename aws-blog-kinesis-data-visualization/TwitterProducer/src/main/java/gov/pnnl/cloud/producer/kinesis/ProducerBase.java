@@ -15,6 +15,7 @@
 
 package gov.pnnl.cloud.producer.kinesis;
 
+import gov.pnnl.cloud.producer.util.Event;
 import gov.pnnl.cloud.producer.util.StatisticsCollection;
 import gov.pnnl.cloud.producer.util.StatisticsCollection.Key;
 

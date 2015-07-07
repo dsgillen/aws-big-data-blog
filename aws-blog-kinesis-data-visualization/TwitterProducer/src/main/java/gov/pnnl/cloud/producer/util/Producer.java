@@ -13,43 +13,32 @@
  * permissions and limitations under the License.
  */
 
-package gov.pnnl.cloud.producer.kinesis;
+package gov.pnnl.cloud.producer.util;
 
 import java.nio.ByteBuffer;
 
 /**
- * Interface for sending information to Amazon Kinesis.
+ * Interface for sending information to a queue implementation.
  *
  */
 public interface Producer {
 	/**
-	 * Posts an event to Kinesis
+	 * Posts an event to the queue
 	 * @param partitionKey The partition key to use
 	 * @param data The event data, represented as a string
 	 */
 	void post(String partitionKey, String data);
 	
-	/**
-	 * Posts an event to Kinesis
-	 * @param partitionKey The partition key to use
-	 * @param data The event data, represented as a byte buffer
-	 */
-	void post(String partitionKey, ByteBuffer data);
-	
-	/**
-	 * Posts an event to Kinesis
-	 * @param event The event data
-	 */
-	void post(Event event);
+
 	
 	
 	/**
-	 * Connects to Kinesis and starts listening for events to send
+	 * Connects to the queue broker 
 	 */
 	void connect();
 	
 	/**
-	 * Stops listening for events
+	 * Terminates the connection to the broker
 	 */
 	void stop();
 	

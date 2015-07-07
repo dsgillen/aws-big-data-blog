@@ -15,6 +15,8 @@
 
 package gov.pnnl.cloud.producer.kinesis;
 
+import gov.pnnl.cloud.producer.util.Event;
+import gov.pnnl.cloud.producer.util.Producer;
 import gov.pnnl.cloud.producer.util.StatisticsCollection;
 
 import java.nio.ByteBuffer;
@@ -113,20 +115,7 @@ public class ProducerClient implements Producer {
 		}
 	}
 
-	/**
-	 * {@inheritDoc} 
-	 */
-	public void post(Event event) {
-		eventsQueue.offer(event);
-	}
 	
-	/**
-	 * {@inheritDoc} 
-	 */
-	public void post(String partitionKey, ByteBuffer data) {
-		Event event = new Event(partitionKey, data);
-		eventsQueue.offer(event);
-	}
 	
 	/**
 	 * {@inheritDoc} 
