@@ -19,6 +19,7 @@ import gov.pnnl.cloud.StatisticsCollection.Key;
 
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -123,66 +124,79 @@ public class KinesisRecordProcessor implements IRecordProcessor {
     * @param records
     */
    private void processRecordsWithRetries(List<Record> records) {
-       for (Record record : records) {
-           boolean processedSuccessfully = false;
-           stats.increment(Key.KINESIS_MESSAGE_READ);
-           String data = null;
-           for (int i = 0; i < NUM_RETRIES; i++) {
-    		   byte[] recordBytes =record.getData().array();
-
-               try {
-            	   
-            	   Coordinate c = null;
-            	   
-            	   try {
-            		   // For this app, we interpret the payload as UTF-8 chars.
-
-            		   // use the ObjectMapper to read the json string and create a tree
-            		   JsonNode node = mapper.readTree(recordBytes);
-
-            		   JsonNode geo = node.findValue("geo");
-            		   JsonNode coords = geo.findValue("coordinates");
-
-            		   Iterator<JsonNode> elements = coords.elements();
-
-            		   double lat = elements.next().asDouble();
-            		   double lng = elements.next().asDouble();
-
-            		   c = new Coordinate(lat, lng);
-
-            	   } catch(Exception e) {
-            		   // if we get here, its bad data, ignore and move on to next record
-            	   }
-
-            	   String topic = "nocoords";
-            	   if(c != null) {
-            		   topic = "coords";
-            	   }
-            	   KeyedMessage<String, String> message = null;
-            	   message = new KeyedMessage<String, String>(topic, new String(recordBytes));
-            	   producer.send(message);
-                   stats.increment(Key.KAFKA_MESSAGE_PUT);
 
 
-            	   processedSuccessfully = true;
-            	   break;
-               } catch (Throwable t) {
-            	   LOG.warn("Caught throwable while processing record " + record, t);
-            	   stats.increment(Key.KAFKA_WRITE_ERROR);
-               }
+	   // list of messages to put into Kafka
+	   List<KeyedMessage<String, String>> list = new ArrayList<KeyedMessage<String, String>>();
 
-               // backoff if we encounter an exception.
-               try {
-                   Thread.sleep(BACKOFF_TIME_IN_MILLIS);
-               } catch (InterruptedException e) {
-                   LOG.debug("Interrupted sleep", e);
-               }
-           }
+	   // iterate through the Kinesis records, and make a Kafka record for each
 
-           if (!processedSuccessfully) {
-               LOG.error("Couldn't process record " + record + ". Skipping the record.");
-           }
-       }
+	   for (Record record : records) {
+		   stats.increment(Key.KINESIS_MESSAGE_READ);
+		   String data = null;
+		   byte[] recordBytes =record.getData().array();
+
+
+		   Coordinate c = null;
+
+		   try {
+			   // For this app, we interpret the payload as UTF-8 chars.
+
+			   // use the ObjectMapper to read the json string and create a tree
+			   JsonNode node = mapper.readTree(recordBytes);
+
+			   JsonNode geo = node.findValue("geo");
+			   JsonNode coords = geo.findValue("coordinates");
+
+			   Iterator<JsonNode> elements = coords.elements();
+
+			   double lat = elements.next().asDouble();
+			   double lng = elements.next().asDouble();
+
+			   c = new Coordinate(lat, lng);
+
+		   } catch(Exception e) {
+			   // if we get here, its bad data, ignore and move on to next record
+			   stats.increment(Key.JSON_PARSE_ERROR);
+		   }
+
+		   String topic = "nocoords";
+		   if(c != null) {
+			   topic = "coords";
+		   }
+		   KeyedMessage<String, String> message = null;
+
+		   message = new KeyedMessage<String, String>(topic, new String(recordBytes));
+		   list.add(message);
+
+	   }
+
+	   boolean processedSuccessfully = false;
+
+	   for (int i = 0; i < NUM_RETRIES; i++) {
+		   try {
+			   producer.send(list);
+			   stats.increment(Key.KAFKA_MESSAGE_PUT);
+
+			   processedSuccessfully = true;
+			   break;
+		   } catch (Throwable t) {
+			   LOG.warn("Caught throwable while processing batch of " + list.size() + " records", t);
+		   }
+
+		   // backoff if we encounter an exception.
+		   try {
+			   Thread.sleep(BACKOFF_TIME_IN_MILLIS);
+		   } catch (InterruptedException e) {
+			   LOG.debug("Interrupted sleep", e);
+		   }
+	   }
+
+	   if (!processedSuccessfully) {
+		   LOG.error("Couldn't process batch of " + list.size() +  "records.  What to do now?");
+		   stats.increment(Key.KAFKA_WRITE_ERROR);
+
+	   }
    }
 
    /**
