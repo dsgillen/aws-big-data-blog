@@ -21,6 +21,7 @@ import gov.pnnl.cloud.producer.util.StatisticsCollection.Key;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 
 import kafka.producer.KeyedMessage;
@@ -92,7 +93,7 @@ public class KafkaProducerBase implements Runnable {
 
 				// add the message 150 times, to add volume!
 				for (int i=0; i<150; i++) {
-					message = new KeyedMessage<String, String>(topic, new String(event.getData().array()));
+					message = new KeyedMessage<String, String>(topic, UUID.randomUUID().toString(), new String(event.getData().array()));
 					stats.increment(Key.KAFKA_MESSAGE_GENERATE);
 
 					messageList.add(message);
