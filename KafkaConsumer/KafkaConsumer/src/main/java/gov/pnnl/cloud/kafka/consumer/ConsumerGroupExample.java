@@ -2,6 +2,7 @@ package gov.pnnl.cloud.kafka.consumer;
 
 
 import gov.pnnl.cloud.kafka.consumer.handler.ConsoleMessageHandler;
+import gov.pnnl.cloud.kafka.consumer.handler.ConsumerProducerRelayMessageHandler;
 import gov.pnnl.cloud.kafka.consumer.handler.CountMessageHandler;
 import gov.pnnl.cloud.kafka.consumer.handler.KafkaMessageHandler;
 
@@ -16,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
+import kafka.javaapi.producer.Producer;
+import kafka.producer.ProducerConfig;
  
 public class ConsumerGroupExample {
     private final ConsumerConnector consumer;
@@ -84,6 +87,17 @@ public class ConsumerGroupExample {
         	handler = new ConsoleMessageHandler();
         } else if (handlerType.equals("count10")) {
         	handler = new CountMessageHandler(topic, 10);
+        } else if (handlerType.equals("relay")) {
+        	Properties properties = new Properties();
+    		properties.put("metadata.broker.list", args[5]);
+    		properties.put("broker.list", args[5]);
+    		properties.put("serializer.class", "kafka.serializer.StringEncoder");
+    		ProducerConfig producerConfig = new ProducerConfig(properties);
+    		Producer producer = new kafka.javaapi.producer.Producer<String, String>(
+    				producerConfig); 
+    		
+    		
+        	handler = new ConsumerProducerRelayMessageHandler(producer, args[6]);
         }
  
         ConsumerGroupExample example = new ConsumerGroupExample(zooKeeper, groupId, topic, handler);
